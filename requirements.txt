@@ -1,0 +1,12 @@
+pandas
+numpy
+polars
+pyarrow
+openpyxl
+scikit-learn
+scipy
+jieba
+selenium
+beautifulsoup4
+sentence-transformers
+torch
