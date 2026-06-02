@@ -147,13 +147,25 @@ python main.py
 
 `main.py` runs all downstream scripts with project-root working directory for portability.
 
+## End-to-End Notebook (Data Collection)
+
+For a step-by-step reproducible walkthrough of GTA + Bilby data collection and cleaning, use:
+
+- `data_collection_end_to_end.ipynb` (at repository root)
+
+This notebook:
+
+- prints input/output dataset metadata and sample rows at each step,
+- keeps GTA scrape rerun code commented by default (uncomment only when needed),
+- shows before/after comparisons for GTA and Bilby cleaning outputs.
+
 ## Detailed Pipeline Steps
 
 | Step | Script | Required | Purpose | Main Outputs |
 |---|---|---|---|---|
 | 1 | `code/data_preprocessing/GTA_Source_Scrape.py` | Optional | Scrape GTA source records from State Act URLs | `Data/China_GTA_Source/interventions_sources.xlsx`, `.parquet` |
 | 2 | `code/data_preprocessing/Bilby_data_combine.py` | Optional | Merge Bilby 2025/2026 raw monthly parquet files | `Data/Bilby_data_fixed/Bilby_2025_2026_combined.parquet` |
-| 3 | `code/data_preprocessing/GTA_Bilby_clean.py` | Yes | Normalize titles/URLs/date fields and export cleaned datasets | cleaned GTA/Bilby parquet + Excel |
+| 3 | `code/data_preprocessing/GTA_Bilby_clean.py` | Yes | Normalize titles/URLs/date fields, deduplicate (GTA by `source_url`, Bilby by `article_url`), and export cleaned datasets | cleaned GTA/Bilby parquet + Excel |
 | 4 | `code/data_match/exact_match.py` | Yes | URL and title exact matching within date window | `Data/match_outputs/combined_match_*.parquet` and Excel reports |
 | 5 | `code/data_match/embedding_match.py` | Optional | Embedding-based matching for higher recall | `Data/match_outputs/embedding_match_matched_records_*.parquet` |
 | 6 | `code/Model/null_signal_dataset.py` | Yes | Build labeled dataset from match outputs | `Data/dataset_construction/null_signal_dataset.parquet` |

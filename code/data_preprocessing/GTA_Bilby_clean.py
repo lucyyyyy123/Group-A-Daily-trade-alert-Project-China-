@@ -199,6 +199,13 @@ def clean_gta_data(gta_df: pd.DataFrame) -> pd.DataFrame:
 	return cleaned_df
 
 
+def dedupe_gta_data(gta_df: pd.DataFrame) -> pd.DataFrame:
+	# Enforce GTA deduplication by source_url while keeping first-seen row order.
+	if "source_url" not in gta_df.columns:
+		raise KeyError("Required column not found for GTA deduplication: source_url")
+	return gta_df.drop_duplicates(subset=["source_url"], keep="first").copy()
+
+
 def enrich_gta_main_title(gta_df: pd.DataFrame, lookup_input_path: Path) -> pd.DataFrame:
 	if GTA_MAIN_TITLE_COLUMN in gta_df.columns:
 		return gta_df
@@ -279,6 +286,13 @@ def clean_bilby_data(bilby_df: pl.DataFrame) -> pl.DataFrame:
 		pl.col("published_at_cn").dt.date().alias(BILBY_DATE_COLUMN),
 		site_root_url_expr.map_elements(extract_url_host, return_dtype=pl.String).alias("site_root_url"),
 	)
+
+
+def dedupe_bilby_data(bilby_df: pl.DataFrame) -> pl.DataFrame:
+	# Enforce Bilby deduplication by article_url while preserving row order.
+	if "article_url" not in bilby_df.columns:
+		raise KeyError("Required column not found for Bilby deduplication: article_url")
+	return bilby_df.unique(subset=["article_url"], keep="first", maintain_order=True)
 
 
 def derive_parquet_output_path(output_path: Path) -> Path:
@@ -468,8 +482,10 @@ def run_gta_bilby_read(
 	bilby_df = load_bilby_data(resolved_bilby_input)
 
 	gta_filtered = clean_gta_data(gta_df)
+	gta_filtered = dedupe_gta_data(gta_filtered)
 	gta_filtered = enrich_gta_main_title(gta_filtered, DEFAULT_GTA_INPUT)
 	bilby_filtered = clean_bilby_data(bilby_df)
+	bilby_filtered = dedupe_bilby_data(bilby_filtered)
 	comparison_df = pd.DataFrame(columns=["month", "gta_count", "bilby_count", "difference"])
 
 	print_gta_summary(gta_filtered)
